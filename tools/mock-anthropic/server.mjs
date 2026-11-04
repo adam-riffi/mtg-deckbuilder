@@ -79,9 +79,6 @@ function script(body) {
     .filter((b) => b.type === "text" && !String(b.text).startsWith("<deck_summary>"))
     .map((b) => b.text)
     .join("\n");
-    .filter((b) => b.type === "text")
-    .map((b) => b.text)
-    .join("\n");
   const query = /ramp/i.test(userText) ? "otag:ramp" : "t:creature";
   return {
     stop: "tool_use",
