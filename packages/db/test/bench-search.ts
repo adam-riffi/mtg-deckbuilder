@@ -1,12 +1,17 @@
 /**
  * Search benchmark on a SYNTHETIC dataset (names like "Synth Card 1234"; not real cards).
  * Usage: pnpm --filter @mtg/db exec tsx test/bench-search.ts [oracleCount]
- * Loads N oracle cards (~3 printings each) through the normal ingest path, then times searches and prints plans.
+ * Loads N oracle cards (~3 printings each) through the ingest upsert path, vacuums, then times searches and prints plans.
  */
 import { sql } from "drizzle-orm";
 import { autocomplete, searchCards } from "../src/cards";
 import { query } from "../src/client";
-import { ingestCardList } from "../src/ingest";
+import {
+  type IngestCounts,
+  refreshOracleAggregates,
+  snapshotPrices,
+  upsertScryfallBatch,
+} from "../src/ingest";
 import { createTestDb } from "../src/testing";
 
 const N = Number(process.argv[2] ?? 20000);
@@ -91,6 +96,7 @@ function card(i: number, p: number) {
 
 const { db, close } = await createTestDb();
 const t0 = performance.now();
+const counts: IngestCounts = { oracle: 0, printings: 0, skipped: 0, invalid: 0 };
 let batch: unknown[] = [];
 let printings = 0;
 for (let i = 0; i < N; i++) {
@@ -98,16 +104,19 @@ for (let i = 0; i < N; i++) {
   for (let p = 0; p < n; p++) batch.push(card(i, p));
   printings += n;
   if (batch.length >= 2000) {
-    await ingestCardList(db, batch);
+    await upsertScryfallBatch(db, batch, "both", counts);
     batch = [];
   }
 }
-if (batch.length) await ingestCardList(db, batch);
+if (batch.length) await upsertScryfallBatch(db, batch, "both", counts);
+await refreshOracleAggregates(db);
+await snapshotPrices(db);
 console.log(
   `Loaded ${N} oracle cards / ${printings} printings in ${((performance.now() - t0) / 1000).toFixed(1)}s`,
 );
-await db.execute(sql`analyze oracle_cards`);
-await db.execute(sql`analyze printings`);
+// The real ingest runs aggregates once; vacuum removes dead tuples so plans reflect a healthy table.
+await db.execute(sql`vacuum (full, analyze) oracle_cards`);
+await db.execute(sql`vacuum (full, analyze) printings`);
 
 const QUERIES = [
   "t:creature c:g mv<=3",
