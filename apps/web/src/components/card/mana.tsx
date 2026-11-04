@@ -1,9 +1,38 @@
+"use client";
+
 import { parseManaCost } from "@mtg/mtg";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 /** Scryfall's symbol SVGs (loaded from their CDN). "{W/U}" → "WU.svg". */
 export function symbolUrl(sym: string): string {
   return `https://svgs.scryfall.io/card-symbols/${sym.replace(/\//g, "")}.svg`;
+}
+
+/** Mana symbol from Scryfall's CDN, falling back to a text pip if the image cannot load (e.g. offline). */
+function ManaSymbol({ sym, size }: { sym: string; size: number }) {
+  const [failed, setFailed] = useState(false);
+  if (failed)
+    return (
+      <span
+        className="inline-flex items-center justify-center rounded-full bg-muted px-1 font-mono text-[10px] leading-none"
+        style={{ minWidth: size, height: size }}
+      >
+        {sym}
+      </span>
+    );
+  return (
+    // biome-ignore lint/performance/noImgElement: tiny static SVGs from Scryfall's CDN
+    <img
+      src={symbolUrl(sym)}
+      alt={`{${sym}}`}
+      width={size}
+      height={size}
+      className="inline-block"
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
 }
 
 export function ManaCost({
@@ -20,16 +49,7 @@ export function ManaCost({
   return (
     <span className={cn("inline-flex items-center gap-px", className)} role="img" aria-label={cost ?? ""}>
       {syms.map((s, i) => (
-        // biome-ignore lint/performance/noImgElement: tiny static SVGs from Scryfall's CDN
-        <img
-          key={i}
-          src={symbolUrl(s)}
-          alt={`{${s}}`}
-          width={size}
-          height={size}
-          className="inline-block"
-          loading="lazy"
-        />
+        <ManaSymbol key={i} sym={s} size={size} />
       ))}
     </span>
   );

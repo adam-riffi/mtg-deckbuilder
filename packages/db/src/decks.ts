@@ -11,7 +11,15 @@ import {
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { getCardsByIds, getPrintingsByIds } from "./cards";
 import type { Db } from "./client";
-import { type DeckSnapshot, deckCards, deckEvents, decks, deckVersions, folders } from "./schema";
+import {
+  type DeckSnapshot,
+  deckCards,
+  deckEvents,
+  decks,
+  deckVersions,
+  folders,
+  oracleCards,
+} from "./schema";
 
 export type DeckRow = typeof decks.$inferSelect;
 export type EventSource = "user" | "ai" | "import" | "system";
@@ -92,18 +100,33 @@ export async function getDeckLines(db: Db, deckId: string): Promise<DeckLine[]> 
   return rows.map(toLine);
 }
 
-/** Joins lines with card and printing data. */
+/**
+ * Joins lines with card and printing data. Lines without a chosen printing get the card's default
+ * printing attached (for images and prices) while keeping printingId null.
+ */
 export async function hydrate(db: Db, lines: DeckLine[]): Promise<DeckEntry[]> {
-  const cards = await getCardsByIds(db, [...new Set(lines.map((l) => l.oracleId))]);
-  const prints = await getPrintingsByIds(db, [
-    ...new Set(lines.map((l) => l.printingId).filter((x): x is string => !!x)),
-  ]);
+  const ids = [...new Set(lines.map((l) => l.oracleId))];
+  const cards = await getCardsByIds(db, ids);
+  const defaults = ids.length
+    ? await db
+        .select({ id: oracleCards.id, p: oracleCards.defaultPrintingId })
+        .from(oracleCards)
+        .where(inArray(oracleCards.id, ids))
+    : [];
+  const defaultOf = new Map(defaults.map((d) => [d.id, d.p]));
+  const printIds = new Set<string>();
+  for (const l of lines) {
+    const p = l.printingId ?? defaultOf.get(l.oracleId);
+    if (p) printIds.add(p);
+  }
+  const prints = await getPrintingsByIds(db, [...printIds]);
   const cById = new Map<string, Card>(cards.map((c) => [c.id, c]));
   const pById = new Map<string, Printing>(prints.map((p) => [p.id, p]));
   const out: DeckEntry[] = [];
   for (const l of lines) {
     const card = cById.get(l.oracleId);
     if (!card) continue;
+    const pid = l.printingId ?? defaultOf.get(l.oracleId) ?? null;
     out.push({
       id: `${l.zone}:${l.oracleId}`,
       cardId: l.oracleId,
@@ -114,7 +137,7 @@ export async function hydrate(db: Db, lines: DeckLine[]): Promise<DeckEntry[]> {
       tags: l.tags,
       finish: l.finish,
       card,
-      printing: l.printingId ? (pById.get(l.printingId) ?? null) : null,
+      printing: pid ? (pById.get(pid) ?? null) : null,
     });
   }
   return out;

@@ -27,7 +27,7 @@ function run(name, cmd, args, opts = {}) {
       buf += d;
       const lines = buf.split("\n");
       buf = lines.pop();
-      for (const l of lines) out.write(prefix + l + "\n");
+      for (const l of lines) out.write(`${prefix + l}\n`);
     });
   };
   pipe(child.stdout, process.stdout);

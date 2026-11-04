@@ -68,3 +68,44 @@ describe("export", () => {
     expect(exportDeck(deck, "archidekt")).toContain("1x Sol Ring [Ramp]");
   });
 });
+
+import { parseCollectionCsv } from "../src/io";
+
+describe("collection csv", () => {
+  it("ManaBox", () => {
+    const r = parseCollectionCsv(
+      "Name,Set code,Set name,Collector number,Foil,Rarity,Quantity,ManaBox ID,Scryfall ID,Condition,Language\nSol Ring,c21,Commander 2021,263,foil,uncommon,2,1,abc-123,near_mint,en\n",
+    );
+    expect(r.source).toBe("ManaBox");
+    expect(r.rows[0]).toMatchObject({
+      name: "Sol Ring",
+      qty: 2,
+      setCode: "c21",
+      collectorNumber: "263",
+      finish: "foil",
+      scryfallId: "abc-123",
+      condition: "NM",
+    });
+  });
+  it("Moxfield", () => {
+    const r = parseCollectionCsv(
+      '"Count","Tradelist Count","Name","Edition","Condition","Language","Foil","Tags","Last Modified","Collector Number"\n"1","0","Lightning Bolt","2xm","Lightly Played","English","","","",""\n',
+    );
+    expect(r.source).toBe("Moxfield");
+    expect(r.rows[0]).toMatchObject({
+      name: "Lightning Bolt",
+      qty: 1,
+      setCode: "2xm",
+      finish: "nonfoil",
+      condition: "LP",
+      language: "en",
+    });
+  });
+  it("Archidekt", () => {
+    const r = parseCollectionCsv(
+      "Quantity,Name,Finish,Condition,Date Added,Language,Purchase Price,Tags,Edition Name,Edition Code,Multiverse Id,Scryfall ID,MTGO ID,Collector Number\n3,Island,Normal,NM,2024-01-01,EN,,,Unfinity,unf,,,,235\n",
+    );
+    expect(r.source).toBe("Archidekt");
+    expect(r.rows[0]).toMatchObject({ name: "Island", qty: 3, setCode: "unf", collectorNumber: "235" });
+  });
+});

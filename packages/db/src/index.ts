@@ -1,6 +1,10 @@
 export * from "./cards";
+export * from "./chat";
 export { createDb, type Db, DEFAULT_DATABASE_URL, getDb, query, schema } from "./client";
+export * from "./collection";
 export * from "./decks";
 export * from "./ingest";
 export { MIGRATIONS_DIR, runMigrations } from "./migrate";
+export * from "./prices";
 export * from "./search";
+export * from "./settings";

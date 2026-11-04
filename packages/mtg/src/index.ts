@@ -10,6 +10,7 @@ export * from "./formats";
 export * from "./hypergeometric";
 export * from "./legality";
 export * from "./mana";
+export * from "./playtest";
 export * from "./scryfall";
 export * from "./stats";
 export * from "./types";
