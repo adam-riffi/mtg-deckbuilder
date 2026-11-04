@@ -17,7 +17,10 @@ import { createTestDb } from "../src/testing";
 const N = Number(process.argv[2] ?? 20000);
 const rand = (() => {
   let s = 12345;
-  return () => (s = (s * 1103515245 + 12345) >>> 0) / 4294967296;
+  return () => {
+    s = (s * 1103515245 + 12345) >>> 0;
+    return s / 4294967296;
+  };
 })();
 const pick = <T>(a: readonly T[]) => a[Math.floor(rand() * a.length)]!;
 const TYPES = [
