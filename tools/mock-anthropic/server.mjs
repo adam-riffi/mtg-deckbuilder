@@ -76,6 +76,9 @@ function script(body) {
     };
   }
   const userText = blocks
+    .filter((b) => b.type === "text" && !String(b.text).startsWith("<deck_summary>"))
+    .map((b) => b.text)
+    .join("\n");
     .filter((b) => b.type === "text")
     .map((b) => b.text)
     .join("\n");
