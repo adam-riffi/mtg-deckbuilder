@@ -258,3 +258,26 @@ export async function resolveLines(db: Db, lines: ParsedLine[]): Promise<Resolve
   }
   return out;
 }
+
+/** Cheapest paper printing per card in the given currency (nonfoil price, falling back to foil). */
+export async function cheapestPrintings(
+  db: Db,
+  oracleIds: string[],
+  currency: "eur" | "usd",
+): Promise<Map<string, { printingId: string; price: number; finish: "nonfoil" | "foil" }>> {
+  const out = new Map<string, { printingId: string; price: number; finish: "nonfoil" | "foil" }>();
+  if (!oracleIds.length) return out;
+  const col = currency === "eur" ? sql.raw("eur") : sql.raw("usd");
+  const foil = currency === "eur" ? sql.raw("eur_foil") : sql.raw("usd_foil");
+  const rows = await query<{ oracle_id: string; id: string; price: number; finish: "nonfoil" | "foil" }>(
+    db,
+    sql`select distinct on (oracle_id) oracle_id, id, coalesce(${col}, ${foil}) as price, case when ${col} is null then 'foil' else 'nonfoil' end as finish
+      from printings where oracle_id in (${sql.join(
+        oracleIds.map((id) => sql`${id}::uuid`),
+        sql`, `,
+      )}) and not digital and coalesce(${col}, ${foil}) is not null
+      order by oracle_id, coalesce(${col}, ${foil}) asc, released_at desc`,
+  );
+  for (const r of rows) out.set(r.oracle_id, { printingId: r.id, price: Number(r.price), finish: r.finish });
+  return out;
+}

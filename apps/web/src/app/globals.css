@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-popover: var(--popover);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+:root {
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.2 0.01 260);
+  --card: oklch(1 0 0);
+  --popover: oklch(1 0 0);
+  --primary: oklch(0.55 0.18 265);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.95 0.005 260);
+  --muted: oklch(0.95 0.005 260);
+  --muted-foreground: oklch(0.48 0.01 260);
+  --accent: oklch(0.93 0.01 260);
+  --destructive: oklch(0.58 0.22 25);
+  --success: oklch(0.6 0.16 150);
+  --warning: oklch(0.72 0.15 75);
+  --border: oklch(0.9 0.005 260);
+  --ring: oklch(0.55 0.18 265);
+}
+
+.dark {
+  --background: oklch(0.17 0.01 265);
+  --foreground: oklch(0.94 0.005 260);
+  --card: oklch(0.21 0.012 265);
+  --popover: oklch(0.23 0.014 265);
+  --primary: oklch(0.7 0.15 265);
+  --primary-foreground: oklch(0.15 0.01 265);
+  --secondary: oklch(0.26 0.014 265);
+  --muted: oklch(0.25 0.012 265);
+  --muted-foreground: oklch(0.72 0.01 260);
+  --accent: oklch(0.3 0.016 265);
+  --destructive: oklch(0.65 0.2 25);
+  --success: oklch(0.72 0.15 150);
+  --warning: oklch(0.82 0.14 80);
+  --border: oklch(0.31 0.012 265);
+  --ring: oklch(0.7 0.15 265);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* Card images keep Scryfall's aspect ratio; rounded corners only, never cropped. */
+.card-img {
+  aspect-ratio: 488 / 680;
+  border-radius: 4.75% / 3.5%;
+}
+
+.ghost-add {
+  outline: 2px dashed var(--color-success);
+  outline-offset: 2px;
+}
+
+.ghost-remove {
+  outline: 2px dashed var(--color-destructive);
+  outline-offset: 2px;
+  opacity: 0.55;
+}
+
+.prose-primer h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem;
+}
+.prose-primer h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+}
+.prose-primer h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.25rem;
+}
+.prose-primer p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+.prose-primer ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+.prose-primer ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+}
+.prose-primer a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+.prose-primer code {
+  background: var(--color-muted);
+  padding: 0 0.25rem;
+  border-radius: 0.25rem;
+}
+.prose-primer blockquote {
+  border-left: 3px solid var(--color-border);
+  padding-left: 0.75rem;
+  color: var(--color-muted-foreground);
+}

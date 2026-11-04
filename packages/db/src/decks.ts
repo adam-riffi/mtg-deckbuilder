@@ -11,7 +11,7 @@ import {
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { getCardsByIds, getPrintingsByIds } from "./cards";
 import type { Db } from "./client";
-import { type DeckSnapshot, deckCards, deckEvents, decks, deckVersions } from "./schema";
+import { type DeckSnapshot, deckCards, deckEvents, decks, deckVersions, folders } from "./schema";
 
 export type DeckRow = typeof decks.$inferSelect;
 export type EventSource = "user" | "ai" | "import" | "system";
@@ -406,4 +406,41 @@ export async function cloneDeck(db: Db, userId: string, deckId: string, name?: s
   const copy = await createDeck(db, userId, { ...rest, name: name ?? `${src.name} (copy)` });
   if (lines.length) await db.insert(deckCards).values(lines.map((l) => ({ ...l, deckId: copy.id })));
   return copy;
+}
+
+/* ───────────── Folders ───────────── */
+
+export async function listFolders(db: Db, userId: string) {
+  return db.select().from(folders).where(eq(folders.userId, userId)).orderBy(folders.name);
+}
+
+export async function createFolder(db: Db, userId: string, name: string, parentId: string | null = null) {
+  const [f] = await db.insert(folders).values({ userId, name, parentId }).returning();
+  return f!;
+}
+
+export async function updateFolder(
+  db: Db,
+  userId: string,
+  id: string,
+  patch: { name?: string; parentId?: string | null },
+) {
+  const [f] = await db
+    .update(folders)
+    .set(patch)
+    .where(and(eq(folders.id, id), eq(folders.userId, userId)))
+    .returning();
+  if (!f) throw new NotFoundError("Folder not found");
+  return f;
+}
+
+/** Deletes a folder; its decks move to the root (FK set null), child folders move up. */
+export async function deleteFolder(db: Db, userId: string, id: string) {
+  const [f] = await db
+    .select()
+    .from(folders)
+    .where(and(eq(folders.id, id), eq(folders.userId, userId)));
+  if (!f) throw new NotFoundError("Folder not found");
+  await db.update(folders).set({ parentId: f.parentId }).where(eq(folders.parentId, id));
+  await db.delete(folders).where(eq(folders.id, id));
 }
