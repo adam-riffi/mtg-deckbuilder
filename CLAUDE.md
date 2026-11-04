@@ -17,7 +17,6 @@ Local MTG deckbuilder (Archidekt/Moxfield parity) with a Claude assistant. Desig
 | Lint / format | `pnpm lint` · `pnpm lint:fix` |
 | Typecheck | `pnpm typecheck` |
 | Unit tests | `pnpm test` |
-| E2E | `pnpm test:e2e` |
 | AI evals (needs `ANTHROPIC_API_KEY` + card data; spends credits) | `pnpm evals -- --yes` |
 | E2E (app running, card data loaded) | `pnpm test:e2e` (set `PW_CHROMIUM_PATH` to use a pre-installed Chromium) |
 
@@ -26,7 +25,7 @@ Run `pnpm lint && pnpm typecheck && pnpm test` before every commit.
 ## Repo map
 
 - `apps/web` — Next.js App Router. Pages in `src/app`, API route handlers in `src/app/api`, UI in `src/components`, client state in `src/stores`, server helpers in `src/server`.
-- `apps/worker` — pg-boss jobs: `src/ingest.ts` (bulk data), `src/jobs.ts` (schedule).
+- `apps/worker` — pg-boss jobs: `src/ingest.ts` (bulk data), `src/main.ts` (daily schedule), `src/cli.ts` (manual ingest).
 - `packages/mtg` — pure domain logic. No I/O, no framework imports. Every module has tests in `test/`.
 - `packages/db` — Drizzle schema (`src/schema.ts`), migrations (`drizzle/`), search compiler (`src/search.ts`), repositories.
 - `packages/ai` — Claude provider, tools, prompts, evals.

@@ -10,7 +10,10 @@ test("register, create a deck, add cards from search, undo and redo", async ({ p
   await page.click("button[type=submit]");
   await page.waitForURL("**/decks");
 
-  await page.getByRole("button", { name: /New deck/ }).first().click();
+  await page
+    .getByRole("button", { name: /New deck/ })
+    .first()
+    .click();
   await page.fill("#deck-name", "E2E deck");
   await page.getByRole("button", { name: "Create" }).click();
   await page.waitForURL(/\/decks\/[0-9a-f-]{36}/);
