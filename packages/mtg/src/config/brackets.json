@@ -1,0 +1,92 @@
+{
+  "version": "2025-10",
+  "source": "https://magic.wizards.com/en/news/announcements/commander-brackets-beta-update",
+  "note": "Commander Brackets are in beta. Edit this file (or the 'brackets' setting) when Wizards updates them; no code change needed.",
+  "brackets": [
+    {
+      "level": 1,
+      "name": "Exhibition",
+      "description": "Ultra-casual; theme over power.",
+      "limits": {
+        "gameChangers": 0,
+        "massLandDenial": 0,
+        "extraTurnCards": 0,
+        "twoCardCombos": 0,
+        "tutors": 2
+      }
+    },
+    {
+      "level": 2,
+      "name": "Core",
+      "description": "Precon-level; unoptimised and social.",
+      "limits": {
+        "gameChangers": 0,
+        "massLandDenial": 0,
+        "extraTurnCards": 1,
+        "twoCardCombos": 0,
+        "tutors": 3
+      }
+    },
+    {
+      "level": 3,
+      "name": "Upgraded",
+      "description": "Beyond precons; strong synergy, no early two-card combos.",
+      "limits": {
+        "gameChangers": 3,
+        "massLandDenial": 0,
+        "extraTurnCards": 3,
+        "twoCardCombos": null,
+        "tutors": null
+      }
+    },
+    {
+      "level": 4,
+      "name": "Optimized",
+      "description": "High power; anything legal goes.",
+      "limits": {
+        "gameChangers": null,
+        "massLandDenial": null,
+        "extraTurnCards": null,
+        "twoCardCombos": null,
+        "tutors": null
+      }
+    },
+    {
+      "level": 5,
+      "name": "cEDH",
+      "description": "Competitive metagame focus. Depends on intent; never inferred from the list alone.",
+      "limits": {
+        "gameChangers": null,
+        "massLandDenial": null,
+        "extraTurnCards": null,
+        "twoCardCombos": null,
+        "tutors": null
+      }
+    }
+  ],
+  "detectors": {
+    "massLandDenial": {
+      "tags": ["mass-land-denial", "land-destruction-mass"],
+      "patterns": [
+        "destroy all lands",
+        "destroy all nonbasic lands",
+        "each player sacrifices (?:all |a |two |three |four |five )?lands",
+        "lands don't untap",
+        "players can't untap more than one land",
+        "return all lands to their owners' hands",
+        "nonbasic lands are mountains",
+        "exile all lands"
+      ]
+    },
+    "extraTurns": {
+      "tags": ["extra-turn"],
+      "patterns": ["take an extra turn", "takes an extra turn", "extra turn after this one"]
+    },
+    "tutors": {
+      "tags": ["tutor"],
+      "patterns": [
+        "search your library for (?:a|an|up to \\w+) (?!basic land|land card|plains|island|swamp|mountain|forest)[^.]*card"
+      ]
+    }
+  }
+}
