@@ -1,6 +1,7 @@
 import type { CardFace, ImageUris, Legality, Prices, RelatedPart } from "@mtg/mtg";
 import { sql } from "drizzle-orm";
 import {
+  bigint,
   bigserial,
   boolean,
   customType,
@@ -20,7 +21,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 const tsvector = customType<{ data: string }>({ dataType: () => "tsvector" });
-const now = () => timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow();
+const now = (name: string) => timestamp(name, { withTimezone: true, mode: "date" }).notNull().defaultNow();
 
 /* ───────────── Auth (Better Auth core schema) ───────────── */
 
@@ -122,7 +123,7 @@ export const oracleCards = pgTable(
     searchVector: tsvector("search_vector").generatedAlwaysAs(
       sql`setweight(to_tsvector('simple', coalesce(name, '')), 'A') || setweight(to_tsvector('english', coalesce(type_line, '')), 'B') || setweight(to_tsvector('english', coalesce(oracle_text, '')), 'C')`,
     ),
-    updatedAt: now(),
+    updatedAt: now("updated_at"),
   },
   (t) => [
     index("oracle_name_trgm").using("gin", sql`${t.nameSearch} gin_trgm_ops`),
@@ -173,7 +174,7 @@ export const printings = pgTable(
     illustrationId: uuid("illustration_id"),
     scryfallUri: text("scryfall_uri"),
     games: text("games").array().notNull().default(sql`'{}'::text[]`),
-    updatedAt: now(),
+    updatedAt: now("updated_at"),
   },
   (t) => [
     index("printings_oracle").on(t.oracleId),
@@ -224,7 +225,7 @@ export const ingestRuns = pgTable("ingest_runs", {
   kind: text("kind").notNull(),
   source: text("source").notNull(),
   sourceUpdatedAt: timestamp("source_updated_at", { withTimezone: true }),
-  startedAt: now(),
+  startedAt: now("started_at"),
   finishedAt: timestamp("finished_at", { withTimezone: true }),
   status: text("status").notNull().default("running"),
   counts: jsonb("counts").$type<Record<string, number>>().notNull().default({}),
@@ -242,7 +243,7 @@ export const folders = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     parentId: uuid("parent_id"),
     name: text("name").notNull(),
-    createdAt: now(),
+    createdAt: now("created_at"),
   },
   (t) => [index("folders_user").on(t.userId)],
 );
@@ -272,8 +273,8 @@ export const decks = pgTable(
       .$type<{ name: string; includeInDeck?: boolean }[]>()
       .notNull()
       .default([]),
-    createdAt: now(),
-    updatedAt: now(),
+    createdAt: now("created_at"),
+    updatedAt: now("updated_at"),
   },
   (t) => [index("decks_user").on(t.userId, t.updatedAt)],
 );
@@ -294,7 +295,7 @@ export const deckCards = pgTable(
     categories: text("categories").array().notNull().default(sql`'{}'::text[]`),
     tags: text("tags").array().notNull().default(sql`'{}'::text[]`),
     finish: text("finish").notNull().default("nonfoil"),
-    addedAt: now(),
+    addedAt: now("added_at"),
   },
   (t) => [
     index("deck_cards_deck").on(t.deckId),
@@ -316,7 +317,11 @@ export const deckEvents = pgTable(
     /** Forward and inverse operations, so any event can be undone. */
     payload: jsonb("payload").$type<{ ops: unknown[]; inverse: unknown[] }>().notNull(),
     changeSetId: uuid("change_set_id"),
-    createdAt: now(),
+    /** Event this one undoes/redoes. kind: "edit" | "undo" | "redo" | "restore" | "import". */
+    refId: bigint("ref_id", { mode: "number" }),
+    undoneAt: timestamp("undone_at", { withTimezone: true }),
+    redoneAt: timestamp("redone_at", { withTimezone: true }),
+    createdAt: now("created_at"),
   },
   (t) => [index("deck_events_deck").on(t.deckId, t.id)],
 );
@@ -331,7 +336,7 @@ export const deckVersions = pgTable(
     name: text("name").notNull(),
     source: text("source").notNull().default("user"),
     snapshot: jsonb("snapshot").$type<DeckSnapshot>().notNull(),
-    createdAt: now(),
+    createdAt: now("created_at"),
   },
   (t) => [index("deck_versions_deck").on(t.deckId, t.createdAt)],
 );
@@ -358,7 +363,7 @@ export const collections = pgTable("collections", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull().default("My collection"),
-  createdAt: now(),
+  createdAt: now("created_at"),
 });
 
 export const collectionItems = pgTable(
@@ -375,7 +380,7 @@ export const collectionItems = pgTable(
     qty: integer("qty").notNull().default(1),
     condition: text("condition").notNull().default("NM"),
     language: text("language").notNull().default("en"),
-    updatedAt: now(),
+    updatedAt: now("updated_at"),
   },
   (t) => [
     primaryKey({ columns: [t.collectionId, t.printingId, t.finish, t.condition, t.language] }),
@@ -398,8 +403,8 @@ export const chatThreads = pgTable(
     inputTokens: integer("input_tokens").notNull().default(0),
     outputTokens: integer("output_tokens").notNull().default(0),
     costUsd: doublePrecision("cost_usd").notNull().default(0),
-    createdAt: now(),
-    updatedAt: now(),
+    createdAt: now("created_at"),
+    updatedAt: now("updated_at"),
   },
   (t) => [index("chat_threads_deck").on(t.deckId, t.updatedAt)],
 );
@@ -420,7 +425,7 @@ export const chatMessages = pgTable(
     cacheReadTokens: integer("cache_read_tokens").notNull().default(0),
     cacheWriteTokens: integer("cache_write_tokens").notNull().default(0),
     costUsd: doublePrecision("cost_usd").notNull().default(0),
-    createdAt: now(),
+    createdAt: now("created_at"),
   },
   (t) => [index("chat_messages_thread").on(t.threadId, t.createdAt)],
 );
@@ -435,7 +440,7 @@ export const changeSets = pgTable(
     threadId: uuid("thread_id").references(() => chatThreads.id, { onDelete: "set null" }),
     summary: text("summary").notNull().default(""),
     status: text("status").notNull().default("pending"),
-    createdAt: now(),
+    createdAt: now("created_at"),
     resolvedAt: timestamp("resolved_at", { withTimezone: true }),
   },
   (t) => [index("change_sets_deck").on(t.deckId, t.status)],
@@ -473,7 +478,7 @@ export const settings = pgTable(
     scope: text("scope").notNull().default("global"),
     key: text("key").notNull(),
     value: jsonb("value").notNull(),
-    updatedAt: now(),
+    updatedAt: now("updated_at"),
   },
   (t) => [uniqueIndex("settings_scope_key").on(t.scope, t.key)],
 );

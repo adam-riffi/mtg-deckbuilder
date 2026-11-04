@@ -4,6 +4,7 @@ export * from "./categories";
 export * from "./colors";
 export * from "./commander";
 export * from "./deck";
+export * from "./deck-ops";
 export * from "./diff";
 export * from "./formats";
 export * from "./hypergeometric";

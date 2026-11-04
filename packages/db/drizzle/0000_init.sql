@@ -42,7 +42,7 @@ CREATE TABLE "change_sets" (
 	"thread_id" uuid,
 	"summary" text DEFAULT '' NOT NULL,
 	"status" text DEFAULT 'pending' NOT NULL,
-	"createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"resolved_at" timestamp with time zone
 );
 --> statement-breakpoint
@@ -57,7 +57,7 @@ CREATE TABLE "chat_messages" (
 	"cache_read_tokens" integer DEFAULT 0 NOT NULL,
 	"cache_write_tokens" integer DEFAULT 0 NOT NULL,
 	"cost_usd" double precision DEFAULT 0 NOT NULL,
-	"createdAt" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "chat_threads" (
@@ -69,8 +69,8 @@ CREATE TABLE "chat_threads" (
 	"input_tokens" integer DEFAULT 0 NOT NULL,
 	"output_tokens" integer DEFAULT 0 NOT NULL,
 	"cost_usd" double precision DEFAULT 0 NOT NULL,
-	"createdAt" timestamp with time zone DEFAULT now() NOT NULL,
-	"updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "collection_items" (
@@ -81,7 +81,7 @@ CREATE TABLE "collection_items" (
 	"qty" integer DEFAULT 1 NOT NULL,
 	"condition" text DEFAULT 'NM' NOT NULL,
 	"language" text DEFAULT 'en' NOT NULL,
-	"updatedAt" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "collection_items_collection_id_printing_id_finish_condition_language_pk" PRIMARY KEY("collection_id","printing_id","finish","condition","language")
 );
 --> statement-breakpoint
@@ -89,7 +89,7 @@ CREATE TABLE "collections" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text NOT NULL,
 	"name" text DEFAULT 'My collection' NOT NULL,
-	"createdAt" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "deck_cards" (
@@ -102,7 +102,7 @@ CREATE TABLE "deck_cards" (
 	"categories" text[] DEFAULT '{}'::text[] NOT NULL,
 	"tags" text[] DEFAULT '{}'::text[] NOT NULL,
 	"finish" text DEFAULT 'nonfoil' NOT NULL,
-	"addedAt" timestamp with time zone DEFAULT now() NOT NULL
+	"added_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "deck_events" (
@@ -114,7 +114,10 @@ CREATE TABLE "deck_events" (
 	"summary" text DEFAULT '' NOT NULL,
 	"payload" jsonb NOT NULL,
 	"change_set_id" uuid,
-	"createdAt" timestamp with time zone DEFAULT now() NOT NULL
+	"ref_id" bigint,
+	"undone_at" timestamp with time zone,
+	"redone_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "deck_versions" (
@@ -123,7 +126,7 @@ CREATE TABLE "deck_versions" (
 	"name" text NOT NULL,
 	"source" text DEFAULT 'user' NOT NULL,
 	"snapshot" jsonb NOT NULL,
-	"createdAt" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "decks" (
@@ -142,8 +145,8 @@ CREATE TABLE "decks" (
 	"cover_printing_id" uuid,
 	"auto_apply_ai" boolean DEFAULT false NOT NULL,
 	"category_order" jsonb DEFAULT '[]'::jsonb NOT NULL,
-	"createdAt" timestamp with time zone DEFAULT now() NOT NULL,
-	"updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "folders" (
@@ -151,7 +154,7 @@ CREATE TABLE "folders" (
 	"user_id" text NOT NULL,
 	"parent_id" uuid,
 	"name" text NOT NULL,
-	"createdAt" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "ingest_runs" (
@@ -159,7 +162,7 @@ CREATE TABLE "ingest_runs" (
 	"kind" text NOT NULL,
 	"source" text NOT NULL,
 	"source_updated_at" timestamp with time zone,
-	"startedAt" timestamp with time zone DEFAULT now() NOT NULL,
+	"started_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"finished_at" timestamp with time zone,
 	"status" text DEFAULT 'running' NOT NULL,
 	"counts" jsonb DEFAULT '{}'::jsonb NOT NULL,
@@ -206,7 +209,7 @@ CREATE TABLE "oracle_cards" (
 	"first_released" date,
 	"default_printing_id" uuid,
 	"search_vector" "tsvector" GENERATED ALWAYS AS (setweight(to_tsvector('simple', coalesce(name, '')), 'A') || setweight(to_tsvector('english', coalesce(type_line, '')), 'B') || setweight(to_tsvector('english', coalesce(oracle_text, '')), 'C')) STORED,
-	"updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "price_snapshots" (
@@ -251,7 +254,7 @@ CREATE TABLE "printings" (
 	"illustration_id" uuid,
 	"scryfall_uri" text,
 	"games" text[] DEFAULT '{}'::text[] NOT NULL,
-	"updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "rulings" (
@@ -280,7 +283,7 @@ CREATE TABLE "settings" (
 	"scope" text DEFAULT 'global' NOT NULL,
 	"key" text NOT NULL,
 	"value" jsonb NOT NULL,
-	"updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "user" (
@@ -326,14 +329,14 @@ ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("
 CREATE INDEX "card_tags_tag" ON "card_tags" USING btree ("tag");--> statement-breakpoint
 CREATE INDEX "change_set_items_set" ON "change_set_items" USING btree ("change_set_id");--> statement-breakpoint
 CREATE INDEX "change_sets_deck" ON "change_sets" USING btree ("deck_id","status");--> statement-breakpoint
-CREATE INDEX "chat_messages_thread" ON "chat_messages" USING btree ("thread_id","createdAt");--> statement-breakpoint
-CREATE INDEX "chat_threads_deck" ON "chat_threads" USING btree ("deck_id","updatedAt");--> statement-breakpoint
+CREATE INDEX "chat_messages_thread" ON "chat_messages" USING btree ("thread_id","created_at");--> statement-breakpoint
+CREATE INDEX "chat_threads_deck" ON "chat_threads" USING btree ("deck_id","updated_at");--> statement-breakpoint
 CREATE INDEX "collection_items_oracle" ON "collection_items" USING btree ("collection_id","oracle_id");--> statement-breakpoint
 CREATE INDEX "deck_cards_deck" ON "deck_cards" USING btree ("deck_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "deck_cards_unique" ON "deck_cards" USING btree ("deck_id","oracle_id","zone");--> statement-breakpoint
 CREATE INDEX "deck_events_deck" ON "deck_events" USING btree ("deck_id","id");--> statement-breakpoint
-CREATE INDEX "deck_versions_deck" ON "deck_versions" USING btree ("deck_id","createdAt");--> statement-breakpoint
-CREATE INDEX "decks_user" ON "decks" USING btree ("user_id","updatedAt");--> statement-breakpoint
+CREATE INDEX "deck_versions_deck" ON "deck_versions" USING btree ("deck_id","created_at");--> statement-breakpoint
+CREATE INDEX "decks_user" ON "decks" USING btree ("user_id","updated_at");--> statement-breakpoint
 CREATE INDEX "folders_user" ON "folders" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "oracle_name_trgm" ON "oracle_cards" USING gin ("name_search" gin_trgm_ops);--> statement-breakpoint
 CREATE INDEX "oracle_text_trgm" ON "oracle_cards" USING gin (lower("oracle_search") gin_trgm_ops);--> statement-breakpoint

@@ -1,0 +1,20 @@
+{
+  "name": "@mtg/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/main.ts",
+    "start": "tsx --env-file-if-exists=../../.env src/main.ts",
+    "ingest": "tsx --env-file-if-exists=../../.env src/cli.ts bulk",
+    "ingest:fixtures": "tsx --env-file-if-exists=../../.env src/cli.ts fixtures",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mtg/db": "workspace:*",
+    "@mtg/mtg": "workspace:*",
+    "pg-boss": "^12.38.0",
+    "zod": "^4.6.7"
+  }
+}
