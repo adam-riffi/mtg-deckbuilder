@@ -31,12 +31,14 @@ import {
   Download,
   History,
   LayoutGrid,
+  Package,
   Plus,
   Redo2,
   Rows3,
   Search,
   Sparkles,
   Table2,
+  Tags,
   Undo2,
   Upload,
   WalletCards,
@@ -77,6 +79,7 @@ import { EditorActionsContext, moveOps, qtyOps, removeOps } from "./entry-action
 import { exportDeckImage } from "./export-image";
 import { HistoryPanel } from "./history-panel";
 import { ExportDialog, ImportDialog } from "./import-export";
+import { PackageDialog, TemplateDialog } from "./packages";
 import { PlaytestPanel } from "./playtest/playtest-panel";
 import { PrimerPanel } from "./primer-panel";
 import { PrintingPicker } from "./printing-picker";
@@ -101,6 +104,8 @@ export function DeckEditor({ deckId }: { deckId: string }) {
   const [printingEntry, setPrintingEntry] = useState<DeckEntry | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [packagesOpen, setPackagesOpen] = useState(false);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
   const [dragging, setDragging] = useState<{
     name: string;
     image: CardHit["image"];
@@ -320,8 +325,9 @@ export function DeckEditor({ deckId }: { deckId: string }) {
       editCategories: setCatEntries,
       pickPrinting: setPrintingEntry,
       categories: knownCategories,
+      missing: (id: string) => (collection.enabled ? (collection.byEntry.get(id)?.missing ?? null) : null),
     }),
-    [apply, ed, knownCategories],
+    [apply, ed, knownCategories, collection],
   );
 
   if (deck.isLoading) {
@@ -494,6 +500,12 @@ export function DeckEditor({ deckId }: { deckId: string }) {
                       <DropdownMenuItem onSelect={autoCategorise}>
                         <Sparkles /> Auto-categorise
                       </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => setPackagesOpen(true)}>
+                        <Package /> Add card package…
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => setTemplatesOpen(true)}>
+                        <Tags /> Category template…
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <Button size="sm" onClick={() => ed.toggleSearch()} aria-expanded={ed.searchOpen}>
@@ -634,6 +646,12 @@ export function DeckEditor({ deckId }: { deckId: string }) {
         onClose={() => setPrintingEntry(null)}
         apply={apply}
         currency={currency}
+      />
+      <PackageDialog open={packagesOpen} onOpenChange={setPackagesOpen} deckId={deckId} apply={apply} />
+      <TemplateDialog
+        open={templatesOpen}
+        onOpenChange={setTemplatesOpen}
+        onApply={(cats) => deck.patchMeta({ categoryOrder: cats.map((name) => ({ name })) })}
       />
       <ImportDialog
         deckId={deckId}

@@ -20,6 +20,8 @@ export interface EditorActions {
   pickPrinting: (entry: DeckEntry) => void;
   categories: string[];
   readOnly?: boolean;
+  /** Collection overlay: copies missing for an entry id ("zone:oracleId"), or null when no collection. */
+  missing?: (entryId: string) => number | null;
 }
 
 export const EditorActionsContext = createContext<EditorActions | null>(null);

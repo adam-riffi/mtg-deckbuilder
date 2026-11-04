@@ -38,6 +38,20 @@ Set `ANTHROPIC_API_KEY` in `.env` to enable the assistant.
 
 Card data and images are provided by [Scryfall](https://scryfall.com). Images load from Scryfall's CDN and are never cropped or altered. Magic: The Gathering is © Wizards of the Coast; this is unofficial Fan Content.
 
+## Status
+
+All four phases from the brief are implemented. Verified in this environment: lint, typecheck, 124 unit/database tests (PGlite), one Playwright e2e flow, and a production build.
+
+| Phase | Built | Deferred / not yet verified |
+|---|---|---|
+| 0 Foundations | pnpm workspace, Drizzle schema + migration, embedded PGlite dev DB, Better Auth, CI, docs | Fixture dataset not generated: Scryfall was unreachable from the build container. Run `pnpm fixtures:build` once. |
+| 1 Core | Bulk ingest, Scryfall-syntax search (SQL + in-memory parity tests), deck CRUD, editor (Stacks/Grid/Text/Table, categories, zones, drag and drop), AI chat with tools and change review | End-to-end chat not run here (no API key). Ingest not run against real bulk data. |
+| 2 Analysis | Stats, legality, brackets (config-driven), import/export, history/versions/diff, printing picker, cheapest printings | Search latency target (<100 ms) not measured on the full dataset. |
+| 3 Library | Dashboard (folders, filters, packages), collection with CSV import and overlays, price snapshots and charts | Price history needs several daily ingests to show trends. |
+| 4 Playtester & polish | Playtester (London mulligan, scry, tokens, counters, life, turns), primer with hover previews, PNG export, optional Commander Spellbook lookup | Combo lookup is off by default until you confirm Commander Spellbook's terms. |
+
+Next steps: run `pnpm ingest` with network access, `pnpm fixtures:build`, add `ANTHROPIC_API_KEY`, then `pnpm evals -- --yes`.
+
 ## Development
 
 See `CLAUDE.md` for commands and conventions and `ARCHITECTURE.md` for the design and decisions.

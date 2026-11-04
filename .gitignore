@@ -13,3 +13,4 @@ next-env.d.ts
 *.tsbuildinfo
 fixtures/raw/
 tsconfig.tsbuildinfo
+test-results/

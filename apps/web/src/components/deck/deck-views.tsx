@@ -211,6 +211,14 @@ function TextRow({
       )}
     >
       <span className="w-6 text-right tabular-nums text-muted-foreground">{entry.qty}</span>
+      {!ghost && (actions.missing?.(entry.id) ?? 0) > 0 && (
+        <span
+          className="rounded bg-warning/20 px-1 text-[10px] text-warning"
+          title="Missing from your collection"
+        >
+          need {actions.missing?.(entry.id)}
+        </span>
+      )}
       <CardHoverPreview card={entry.card} printing={entry.printing}>
         <button
           type="button"

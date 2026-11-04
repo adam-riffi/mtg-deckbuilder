@@ -84,3 +84,13 @@ Default exclusions match Scryfall: tokens/emblems/art series are hidden unless `
 | D14 | EUR is the default currency; USD optional per user setting | Per brief. |
 | D15 | Commander Spellbook integration is off by default | Only enabled once its terms are confirmed by the user; the tool reports "not enabled" otherwise. |
 | D16 | Fixture dataset is generated from Scryfall, never hand-written | The build environment could not reach Scryfall; `pnpm fixtures:build` produces `fixtures/cards.json` from a curated list of edge-case card names. Tests that need cards use clearly-labelled synthetic test inputs. |
+| D17 | Card images use plain `<img>` with Scryfall CDN URLs (`images.unoptimized`) | Next's image optimiser re-encodes images; Scryfall asks that images are not altered. Mana symbols load from `svgs.scryfall.io` with a text fallback offline. |
+| D18 | TanStack Table pinned to v8 | v9 changed its API substantially; v8 is stable and well documented. |
+| D19 | Default chat model `claude-sonnet-5-5` at effort `medium`; `claude-opus-5-5` (effort `high`) for full builds; `claude-haiku-5-5` for thread titles | Per brief; Sonnet 5.5 guidance recommends `medium` for multi-step tool use. Model ids and prices live in `packages/ai/src/models.ts`. |
+| D20 | Server-side refusal fallback (`fallbacks: "default"`) on Sonnet/Opus | Recommended default for these models on the Claude API; a declined request is retried on a fallback model inside the same call. Haiku has no server-side fallback. |
+| D21 | Deck summary is sent in the user turn, not the system prompt | Keeps system prompt and tool definitions byte-stable for prompt caching; history is append-only so thinking blocks stay valid. |
+| D22 | Unverified-name check: the model writes card names as `[[Name]]`; names not seen in tool results are flagged in the UI and fail evals | Deterministic check of "never names a card it has not verified". `propose_changes` additionally rejects any name not in the database. |
+| D23 | Auto-apply runs client-side after a proposal arrives | Keeps the server rule "AI never mutates the deck" absolute; auto-applied changes are still normal undoable AI events. |
+| D24 | Worker falls back to an in-process daily timer if pg-boss cannot start | pg-boss needs features the embedded PGlite server may not provide on every platform. |
+| D25 | Bracket estimate counts tutors with a text heuristic and treats two-card combos as "not checked" unless Commander Spellbook is enabled | Combo data needs an external service the user must opt into. |
+| D26 | Collection overlays use the cheapest printing for cost-to-complete | Matches the "budget" view; per-printing ownership is still stored. |

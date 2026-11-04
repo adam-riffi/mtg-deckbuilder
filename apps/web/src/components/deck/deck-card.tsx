@@ -91,6 +91,14 @@ export function DeckCard({
           ×{entry.qty}
         </span>
       )}
+      {!ghost && (actions.missing?.(entry.id) ?? 0) > 0 && (
+        <span
+          className="absolute bottom-[22%] left-1 rounded bg-warning px-1 text-[10px] font-bold text-black"
+          title="Missing from your collection"
+        >
+          NEED {actions.missing?.(entry.id)}
+        </span>
+      )}
       {entry.finish !== "nonfoil" && (
         <span className="absolute top-[8%] right-1 rounded bg-gradient-to-r from-pink-500 to-yellow-400 px-1 text-[10px] font-bold text-black">
           {entry.finish === "foil" ? "FOIL" : "ETCHED"}

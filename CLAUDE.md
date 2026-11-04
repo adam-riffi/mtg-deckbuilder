@@ -18,7 +18,8 @@ Local MTG deckbuilder (Archidekt/Moxfield parity) with a Claude assistant. Desig
 | Typecheck | `pnpm typecheck` |
 | Unit tests | `pnpm test` |
 | E2E | `pnpm test:e2e` |
-| AI evals (needs `ANTHROPIC_API_KEY`) | `pnpm evals` |
+| AI evals (needs `ANTHROPIC_API_KEY` + card data; spends credits) | `pnpm evals -- --yes` |
+| E2E (app running, card data loaded) | `pnpm test:e2e` (set `PW_CHROMIUM_PATH` to use a pre-installed Chromium) |
 
 Run `pnpm lint && pnpm typecheck && pnpm test` before every commit.
 
@@ -44,3 +45,8 @@ Run `pnpm lint && pnpm typecheck && pnpm test` before every commit.
 - The Anthropic API key is server-side only and never logged.
 - Conventional commits, small and logical.
 - Record every non-obvious default under "Decisions" in `ARCHITECTURE.md`.
+
+## Status (end of this session)
+
+- Phases 0–4 are implemented; see README "Status" for what is verified and what is pending.
+- Commits are authored as Adam Riffi (GitHub no-reply address) with Claude as co-author.
